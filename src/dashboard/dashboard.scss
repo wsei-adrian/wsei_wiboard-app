@@ -1,0 +1,21 @@
+.dashboard-background {
+    --board-background: var(--app-color-surface);
+    --board-dot-color: var(--app-color-board-dot);
+    --board-dot-size: 1.5px;
+    --board-grid-size: 20px;
+
+    position: relative;
+    min-height: 100vh;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 24px;
+
+    background-color: var(--board-background);
+    background-image: radial-gradient(
+        circle,
+        var(--board-dot-color) var(--board-dot-size),
+        transparent calc(var(--board-dot-size) + 0.5px)
+    );
+    background-position: 0 0;
+    background-size: var(--board-grid-size) var(--board-grid-size);
+}
