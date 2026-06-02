@@ -3,5 +3,8 @@
     "explorer.fileNesting.patterns": {
         "tsconfig.json": "tsconfig.*.json",
         "package.json": "package-lock.json, pnpm*, .yarnrc*, yarn*, .eslint*, eslint*, .oxlint*, oxlint*, .oxfmt*, .prettier*, prettier*, commitlint*, .editorconfig"
-    }
+    },
+    "html.customData": [
+        "./node_modules/@awesome.me/webawesome/dist/vscode.html-custom-data.json"
+    ]
 }
