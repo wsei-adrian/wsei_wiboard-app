@@ -1,15 +1,4 @@
-:root {
-    --app-color-text: var(--wa-color-neutral-900);
-    --app-color-text-muted: var(--wa-color-neutral-600);
-
-    --app-color-surface: #ffffff;
-
-    --app-color-border: rgba(30, 40, 50, 0.1);
-    --app-color-shadow: rgba(0, 0, 0, 0.3);
-
-    --app-color-board-dot: rgba(155, 155, 155, 0.3);
-}
-
+@import url('./variables.scss');
 
 html,
 body {
