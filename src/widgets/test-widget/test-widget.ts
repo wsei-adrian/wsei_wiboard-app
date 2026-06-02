@@ -1,7 +1,7 @@
 import { BaseDashboardWidget } from '../../core/widgets/base-dashboard-widget';
 
 import type { TestWidgetConfig } from './test-widget.types';
-import './test-widget.scss'
+import './test-widget.scss';
 
 
 export class TestWidget extends BaseDashboardWidget<TestWidgetConfig> {
