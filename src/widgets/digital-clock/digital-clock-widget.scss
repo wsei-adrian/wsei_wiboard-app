@@ -1,0 +1,20 @@
+.digital-clock-widget {
+  display: grid;
+  gap: 16px;
+}
+
+.digital-clock-widget__time {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.digital-clock-widget__settings {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.digital-clock-widget__select {
+  min-width: 120px;
+}
