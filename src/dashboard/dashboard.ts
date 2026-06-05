@@ -4,6 +4,7 @@ import type { WidgetRegistry } from '../widgets/common/widget-registry';
 import type {
   DashboardConfiguration,
   DashboardWidgetInstanceConfiguration,
+  DashboardWidgetType,
 } from './dashboard.types';
 import './dashboard.scss';
 
@@ -39,11 +40,27 @@ export class Dashboard {
           <h1 class="dashboard__title">WiBoard</h1>
           <p class="dashboard__subtitle">Configuration provider: ${this.configurationProvider.label}</p>
         </div>
+        <div class="dashboard__controls">
+          <select class="dashboard__widget-type-select">
+            ${this.createWidgetTypeOptions()}
+          </select>
+          <button class="dashboard__button" type="button">Add widget</button>
+        </div>
       </header>
       <section class="dashboard__widgets"></section>
     `;
 
     this.widgetListElement = element.querySelector<HTMLElement>('.dashboard__widgets');
+    const addButton = element.querySelector<HTMLButtonElement>('.dashboard__button');
+    const widgetTypeSelect = element.querySelector<HTMLSelectElement>('.dashboard__widget-type-select');
+
+    addButton?.addEventListener('click', () => {
+      if (!widgetTypeSelect) {
+        return;
+      }
+
+      void this.addWidget(widgetTypeSelect.value as DashboardWidgetType);
+    });
 
     return element;
   }
@@ -56,6 +73,13 @@ export class Dashboard {
     }
 
     return this.createDefaultConfiguration();
+  }
+
+  private createWidgetTypeOptions(): string {
+    return this.widgetRegistry
+      .getItems()
+      .map((item) => `<option value="${item.type}">${item.title}</option>`)
+      .join('');
   }
 
   private createDefaultConfiguration(): DashboardConfiguration {
@@ -91,6 +115,7 @@ export class Dashboard {
     cardElement.innerHTML = `
       <header class="dashboard__widget-header">
         <h2 class="dashboard__widget-title">${widgetConfiguration.title}</h2>
+        <button class="dashboard__icon-button" type="button">Remove</button>
       </header>
       <div class="dashboard__widget-body"></div>
     `;
@@ -98,6 +123,11 @@ export class Dashboard {
     widgetListElement.appendChild(cardElement);
 
     const bodyElement = cardElement.querySelector<HTMLElement>('.dashboard__widget-body');
+    const removeButton = cardElement.querySelector<HTMLButtonElement>('.dashboard__icon-button');
+
+    removeButton?.addEventListener('click', () => {
+      void this.removeWidget(widgetConfiguration.id);
+    });
 
     if (!bodyElement) {
       return;
@@ -116,6 +146,27 @@ export class Dashboard {
       console.error('Failed to mount widget.', error);
       bodyElement.textContent = 'Widget could not be loaded.';
     }
+  }
+
+  private async addWidget(type: DashboardWidgetType): Promise<void> {
+    const item = this.widgetRegistry.getItem(type);
+
+    this.configuration.widgets.push({
+      id: crypto.randomUUID(),
+      type: item.type,
+      title: item.title,
+      config: item.createDefaultConfig(),
+    });
+
+    await this.saveConfiguration();
+    await this.renderWidgets();
+  }
+
+  private async removeWidget(id: string): Promise<void> {
+    this.configuration.widgets = this.configuration.widgets.filter((widget) => widget.id !== id);
+
+    await this.saveConfiguration();
+    await this.renderWidgets();
   }
 
   private async unmountWidgets(): Promise<void> {
