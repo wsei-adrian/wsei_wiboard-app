@@ -101,9 +101,22 @@ export class Dashboard {
     await this.unmountWidgets();
     widgetListElement.innerHTML = '';
 
+    if (this.configuration.widgets.length === 0) {
+      this.renderEmptyState(widgetListElement);
+      return;
+    }
+
     for (const widgetConfiguration of this.configuration.widgets) {
       await this.mountWidget(widgetListElement, widgetConfiguration);
     }
+  }
+
+  private renderEmptyState(widgetListElement: HTMLElement): void {
+    const emptyStateElement = document.createElement('p');
+    emptyStateElement.className = 'dashboard__empty-state';
+    emptyStateElement.textContent = 'No widgets yet. Add one from the dashboard controls.';
+
+    widgetListElement.appendChild(emptyStateElement);
   }
 
   private async mountWidget(
