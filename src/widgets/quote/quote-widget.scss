@@ -1,0 +1,39 @@
+.quote-widget {
+  display: grid;
+  gap: 16px;
+}
+
+.quote-widget__controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quote-widget__select,
+.quote-widget__button {
+  min-height: 36px;
+}
+
+.quote-widget__button {
+  cursor: pointer;
+}
+
+.quote-widget__quote {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.4;
+}
+
+.quote-widget__author,
+.quote-widget__state,
+.quote-widget__error {
+  margin: 0;
+}
+
+.quote-widget__author {
+  color: var(--app-color-text-muted);
+}
+
+.quote-widget__error {
+  color: #b42318;
+}
