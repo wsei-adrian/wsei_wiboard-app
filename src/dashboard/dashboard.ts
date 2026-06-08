@@ -18,6 +18,7 @@ export class Dashboard {
   private configuration: DashboardConfiguration = { widgets: [] };
   private widgetListElement: HTMLElement | null = null;
   private providerLabelElement: HTMLElement | null = null;
+  private feedbackElement: HTMLElement | null = null;
 
   constructor(
     configurationProviders: DashboardConfigurationProvider[],
@@ -69,11 +70,13 @@ export class Dashboard {
           <button class="dashboard__button" type="button">Add widget</button>
         </div>
       </header>
+      <p class="dashboard__feedback" hidden></p>
       <section class="dashboard__widgets"></section>
     `;
 
     this.widgetListElement = element.querySelector<HTMLElement>('.dashboard__widgets');
     this.providerLabelElement = element.querySelector<HTMLElement>('.dashboard__provider-label');
+    this.feedbackElement = element.querySelector<HTMLElement>('.dashboard__feedback');
     const addButton = element.querySelector<HTMLButtonElement>('.dashboard__button');
     const providerSelect = element.querySelector<HTMLSelectElement>('.dashboard__provider-select');
     const widgetTypeSelect = element.querySelector<HTMLSelectElement>('.dashboard__widget-type-select');
@@ -97,10 +100,19 @@ export class Dashboard {
   }
 
   private async loadConfiguration(): Promise<DashboardConfiguration> {
-    const configuration = await this.configurationProvider.loadConfiguration();
+    try {
+      const configuration = await this.configurationProvider.loadConfiguration();
 
-    if (configuration) {
-      return configuration;
+      this.clearFeedback();
+
+      if (configuration) {
+        return configuration;
+      }
+    } catch (error) {
+      console.error('Failed to load dashboard configuration.', error);
+      this.showFeedback(
+        `Could not load configuration from ${this.configurationProvider.label}. Default dashboard was loaded.`,
+      );
     }
 
     return this.createDefaultConfiguration();
@@ -274,7 +286,13 @@ export class Dashboard {
   }
 
   private async saveConfiguration(): Promise<void> {
-    await this.configurationProvider.saveConfiguration(this.configuration);
+    try {
+      await this.configurationProvider.saveConfiguration(this.configuration);
+      this.clearFeedback();
+    } catch (error) {
+      console.error('Failed to save dashboard configuration.', error);
+      this.showFeedback(`Could not save configuration to ${this.configurationProvider.label}.`);
+    }
   }
 
   private getWidgetListElement(): HTMLElement {
@@ -283,5 +301,23 @@ export class Dashboard {
     }
 
     return this.widgetListElement;
+  }
+
+  private showFeedback(message: string): void {
+    if (!this.feedbackElement) {
+      return;
+    }
+
+    this.feedbackElement.textContent = message;
+    this.feedbackElement.hidden = false;
+  }
+
+  private clearFeedback(): void {
+    if (!this.feedbackElement) {
+      return;
+    }
+
+    this.feedbackElement.textContent = '';
+    this.feedbackElement.hidden = true;
   }
 }

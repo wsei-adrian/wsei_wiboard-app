@@ -16,20 +16,22 @@ export class IndexedDbDashboardConfigurationProvider implements DashboardConfigu
   readonly label = 'IndexedDB';
 
   async loadConfiguration(): Promise<DashboardConfiguration | null> {
+    let database: IDBDatabase | null = null;
+
     try {
-      const database = await this.openDatabase();
+      database = await this.openDatabase();
       const transaction = database.transaction(STORE_NAME, 'readonly');
       const store = transaction.objectStore(STORE_NAME);
       const result = await this.requestToPromise<StoredDashboardConfiguration | undefined>(
         store.get(CONFIGURATION_ID),
       );
 
-      database.close();
-
       return result?.configuration ?? null;
     } catch (error) {
       console.error('Failed to load dashboard configuration from IndexedDB.', error);
-      return null;
+      throw error;
+    } finally {
+      database?.close();
     }
   }
 

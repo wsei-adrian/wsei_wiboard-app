@@ -13,16 +13,23 @@ export class LocalStorageDashboardConfigurationProvider implements DashboardConf
   }
 
   async loadConfiguration(): Promise<DashboardConfiguration | null> {
+    let value: string | null;
+
     try {
-      const value = window.localStorage.getItem(this.storageKey);
+      value = window.localStorage.getItem(this.storageKey);
+    } catch (error) {
+      console.error('Failed to read dashboard configuration from LocalStorage.', error);
+      throw error;
+    }
 
-      if (!value) {
-        return null;
-      }
+    if (!value) {
+      return null;
+    }
 
+    try {
       return JSON.parse(value) as DashboardConfiguration;
     } catch (error) {
-      console.error('Failed to load dashboard configuration from LocalStorage.', error);
+      console.error('Invalid dashboard configuration in LocalStorage.', error);
       return null;
     }
   }
