@@ -1,5 +1,6 @@
 import { DigitalClockWidget } from '../digital-clock/digital-clock-widget';
 import { DummyJsonQuoteProvider } from '../quote/dummy-json-quote-provider';
+import { LocalQuoteProvider } from '../quote/local-quote-provider';
 import { QuoteWidget } from '../quote/quote-widget';
 import { WidgetRegistry } from './widget-registry';
 
@@ -14,7 +15,8 @@ export function createDefaultWidgetRegistry(): WidgetRegistry {
     {
       type: 'quote',
       title: 'Quote',
-      createWidget: () => new QuoteWidget([new DummyJsonQuoteProvider()]),
+      createWidget: () =>
+        new QuoteWidget([new DummyJsonQuoteProvider(), new LocalQuoteProvider()]),
       createDefaultConfig: () => ({ providerId: 'dummy-json' }),
     },
   ]);
