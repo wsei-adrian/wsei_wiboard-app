@@ -1,6 +1,7 @@
 import type { DashboardWidget } from '../core/contracts/dashboard-widget';
 import type { DashboardConfigurationProvider } from '../storage/dashboard-configuration-provider';
 import type { WidgetRegistry } from '../widgets/common/widget-registry';
+import { ConfigurationProviderSelector } from './configuration-provider-selector';
 import type {
   DashboardConfiguration,
   DashboardWidgetInstanceConfiguration,
@@ -8,11 +9,8 @@ import type {
 } from './dashboard.types';
 import './dashboard.scss';
 
-const ACTIVE_PROVIDER_STORAGE_KEY = 'wiboard.activeConfigurationProvider';
-
 export class Dashboard {
-  private readonly configurationProviders: DashboardConfigurationProvider[];
-  private configurationProvider: DashboardConfigurationProvider;
+  private readonly providerSelector: ConfigurationProviderSelector;
   private readonly widgetRegistry: WidgetRegistry;
   private readonly widgets = new Map<string, DashboardWidget<unknown>>();
   private configuration: DashboardConfiguration = { widgets: [] };
@@ -24,13 +22,7 @@ export class Dashboard {
     configurationProviders: DashboardConfigurationProvider[],
     widgetRegistry: WidgetRegistry,
   ) {
-    if (configurationProviders.length === 0) {
-      throw new Error('Dashboard needs at least one configuration provider.');
-    }
-
-    this.configurationProviders = configurationProviders;
-    this.configurationProvider =
-      this.findProvider(this.loadActiveProviderId()) ?? configurationProviders[0];
+    this.providerSelector = new ConfigurationProviderSelector(configurationProviders);
     this.widgetRegistry = widgetRegistry;
   }
 
@@ -51,7 +43,7 @@ export class Dashboard {
           <h1 class="dashboard__title">WiBoard</h1>
           <p class="dashboard__subtitle">
             Configuration provider:
-            <span class="dashboard__provider-label">${this.configurationProvider.label}</span>
+            <span class="dashboard__provider-label">${this.getConfigurationProvider().label}</span>
           </p>
         </div>
         <div class="dashboard__controls">
@@ -82,7 +74,7 @@ export class Dashboard {
     const widgetTypeSelect = element.querySelector<HTMLSelectElement>('.dashboard__widget-type-select');
 
     if (providerSelect) {
-      providerSelect.value = this.configurationProvider.id;
+      providerSelect.value = this.getConfigurationProvider().id;
       providerSelect.addEventListener('change', () => {
         void this.changeConfigurationProvider(providerSelect.value);
       });
@@ -101,7 +93,7 @@ export class Dashboard {
 
   private async loadConfiguration(): Promise<DashboardConfiguration> {
     try {
-      const configuration = await this.configurationProvider.loadConfiguration();
+      const configuration = await this.getConfigurationProvider().loadConfiguration();
 
       this.clearFeedback();
 
@@ -111,7 +103,7 @@ export class Dashboard {
     } catch (error) {
       console.error('Failed to load dashboard configuration.', error);
       this.showFeedback(
-        `Could not load configuration from ${this.configurationProvider.label}. Default dashboard was loaded.`,
+        `Could not load configuration from ${this.getConfigurationProvider().label}. Default dashboard was loaded.`,
       );
     }
 
@@ -119,7 +111,8 @@ export class Dashboard {
   }
 
   private createProviderOptions(): string {
-    return this.configurationProviders
+    return this.providerSelector
+      .getProviders()
       .map((provider) => `<option value="${provider.id}">${provider.label}</option>`)
       .join('');
   }
@@ -169,48 +162,21 @@ export class Dashboard {
   }
 
   private async changeConfigurationProvider(providerId: string): Promise<void> {
-    const provider = this.findProvider(providerId);
+    const provider = this.providerSelector.selectProvider(providerId);
 
     if (!provider) {
       return;
     }
 
-    this.configurationProvider = provider;
-    this.saveActiveProviderId(provider.id);
     this.updateProviderLabel();
 
     this.configuration = await this.loadConfiguration();
     await this.renderWidgets();
   }
 
-  private findProvider(providerId: string | null): DashboardConfigurationProvider | null {
-    if (!providerId) {
-      return null;
-    }
-
-    return this.configurationProviders.find((provider) => provider.id === providerId) ?? null;
-  }
-
-  private loadActiveProviderId(): string | null {
-    try {
-      return window.localStorage.getItem(ACTIVE_PROVIDER_STORAGE_KEY);
-    } catch (error) {
-      console.error('Failed to load active configuration provider.', error);
-      return null;
-    }
-  }
-
-  private saveActiveProviderId(providerId: string): void {
-    try {
-      window.localStorage.setItem(ACTIVE_PROVIDER_STORAGE_KEY, providerId);
-    } catch (error) {
-      console.error('Failed to save active configuration provider.', error);
-    }
-  }
-
   private updateProviderLabel(): void {
     if (this.providerLabelElement) {
-      this.providerLabelElement.textContent = this.configurationProvider.label;
+      this.providerLabelElement.textContent = this.getConfigurationProvider().label;
     }
   }
 
@@ -287,11 +253,11 @@ export class Dashboard {
 
   private async saveConfiguration(): Promise<void> {
     try {
-      await this.configurationProvider.saveConfiguration(this.configuration);
+      await this.getConfigurationProvider().saveConfiguration(this.configuration);
       this.clearFeedback();
     } catch (error) {
       console.error('Failed to save dashboard configuration.', error);
-      this.showFeedback(`Could not save configuration to ${this.configurationProvider.label}.`);
+      this.showFeedback(`Could not save configuration to ${this.getConfigurationProvider().label}.`);
     }
   }
 
@@ -319,5 +285,9 @@ export class Dashboard {
 
     this.feedbackElement.textContent = '';
     this.feedbackElement.hidden = true;
+  }
+
+  private getConfigurationProvider(): DashboardConfigurationProvider {
+    return this.providerSelector.getActiveProvider();
   }
 }
