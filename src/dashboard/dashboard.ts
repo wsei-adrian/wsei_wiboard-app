@@ -10,6 +10,11 @@ import type {
 } from './dashboard.types';
 import './dashboard.scss';
 
+interface DashboardConfigurationLoadResult {
+  configuration: DashboardConfiguration;
+  failed: boolean;
+}
+
 export class Dashboard {
   private readonly providerSelector: ConfigurationProviderSelector;
   private readonly widgetRegistry: WidgetRegistry;
@@ -31,7 +36,8 @@ export class Dashboard {
     const element = this.createElement();
     target.appendChild(element);
 
-    this.configuration = await this.loadConfiguration();
+    const loadResult = await this.loadConfiguration();
+    this.configuration = loadResult.configuration;
     await this.renderWidgets();
   }
 
@@ -92,23 +98,34 @@ export class Dashboard {
     return element;
   }
 
-  private async loadConfiguration(): Promise<DashboardConfiguration> {
+  private async loadConfiguration(): Promise<DashboardConfigurationLoadResult> {
     try {
       const configuration = await this.getConfigurationProvider().loadConfiguration();
 
       this.feedback.clear();
 
       if (configuration) {
-        return configuration;
+        return {
+          configuration,
+          failed: false,
+        };
       }
     } catch (error) {
       console.error('Failed to load dashboard configuration.', error);
       this.feedback.show(
         `Could not load configuration from ${this.getConfigurationProvider().label}. Default dashboard was loaded.`,
       );
+
+      return {
+        configuration: this.createDefaultConfiguration(),
+        failed: true,
+      };
     }
 
-    return this.createDefaultConfiguration();
+    return {
+      configuration: this.createDefaultConfiguration(),
+      failed: false,
+    };
   }
 
   private createProviderOptions(): string {
@@ -171,8 +188,16 @@ export class Dashboard {
 
     this.updateProviderLabel();
 
-    this.configuration = await this.loadConfiguration();
+    const loadResult = await this.loadConfiguration();
+    this.configuration = loadResult.configuration;
     await this.renderWidgets();
+
+    if (!loadResult.failed) {
+      this.feedback.show(
+        `Loaded configuration from ${provider.label}. Existing widgets were not copied between storage providers.`,
+        'info',
+      );
+    }
   }
 
   private updateProviderLabel(): void {
