@@ -2,6 +2,7 @@ import type { DashboardWidget } from '../core/contracts/dashboard-widget';
 import type { DashboardConfigurationProvider } from '../storage/dashboard-configuration-provider';
 import type { WidgetRegistry } from '../widgets/common/widget-registry';
 import { ConfigurationProviderSelector } from './configuration-provider-selector';
+import { DashboardFeedback } from './dashboard-feedback';
 import type {
   DashboardConfiguration,
   DashboardWidgetInstanceConfiguration,
@@ -12,11 +13,11 @@ import './dashboard.scss';
 export class Dashboard {
   private readonly providerSelector: ConfigurationProviderSelector;
   private readonly widgetRegistry: WidgetRegistry;
+  private readonly feedback = new DashboardFeedback();
   private readonly widgets = new Map<string, DashboardWidget<unknown>>();
   private configuration: DashboardConfiguration = { widgets: [] };
   private widgetListElement: HTMLElement | null = null;
   private providerLabelElement: HTMLElement | null = null;
-  private feedbackElement: HTMLElement | null = null;
 
   constructor(
     configurationProviders: DashboardConfigurationProvider[],
@@ -68,7 +69,7 @@ export class Dashboard {
 
     this.widgetListElement = element.querySelector<HTMLElement>('.dashboard__widgets');
     this.providerLabelElement = element.querySelector<HTMLElement>('.dashboard__provider-label');
-    this.feedbackElement = element.querySelector<HTMLElement>('.dashboard__feedback');
+    this.feedback.bind(element.querySelector<HTMLElement>('.dashboard__feedback'));
     const addButton = element.querySelector<HTMLButtonElement>('.dashboard__button');
     const providerSelect = element.querySelector<HTMLSelectElement>('.dashboard__provider-select');
     const widgetTypeSelect = element.querySelector<HTMLSelectElement>('.dashboard__widget-type-select');
@@ -95,14 +96,14 @@ export class Dashboard {
     try {
       const configuration = await this.getConfigurationProvider().loadConfiguration();
 
-      this.clearFeedback();
+      this.feedback.clear();
 
       if (configuration) {
         return configuration;
       }
     } catch (error) {
       console.error('Failed to load dashboard configuration.', error);
-      this.showFeedback(
+      this.feedback.show(
         `Could not load configuration from ${this.getConfigurationProvider().label}. Default dashboard was loaded.`,
       );
     }
@@ -254,10 +255,10 @@ export class Dashboard {
   private async saveConfiguration(): Promise<void> {
     try {
       await this.getConfigurationProvider().saveConfiguration(this.configuration);
-      this.clearFeedback();
+      this.feedback.clear();
     } catch (error) {
       console.error('Failed to save dashboard configuration.', error);
-      this.showFeedback(`Could not save configuration to ${this.getConfigurationProvider().label}.`);
+      this.feedback.show(`Could not save configuration to ${this.getConfigurationProvider().label}.`);
     }
   }
 
@@ -267,24 +268,6 @@ export class Dashboard {
     }
 
     return this.widgetListElement;
-  }
-
-  private showFeedback(message: string): void {
-    if (!this.feedbackElement) {
-      return;
-    }
-
-    this.feedbackElement.textContent = message;
-    this.feedbackElement.hidden = false;
-  }
-
-  private clearFeedback(): void {
-    if (!this.feedbackElement) {
-      return;
-    }
-
-    this.feedbackElement.textContent = '';
-    this.feedbackElement.hidden = true;
   }
 
   private getConfigurationProvider(): DashboardConfigurationProvider {
