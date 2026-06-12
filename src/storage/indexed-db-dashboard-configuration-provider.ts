@@ -1,4 +1,5 @@
 import type { DashboardConfiguration } from '../dashboard/dashboard.types';
+import { isDashboardConfiguration } from '../dashboard/dashboard-configuration-validation';
 import type { DashboardConfigurationProvider } from './dashboard-configuration-provider';
 
 const DATABASE_NAME = 'wiboard';
@@ -26,7 +27,16 @@ export class IndexedDbDashboardConfigurationProvider implements DashboardConfigu
         store.get(CONFIGURATION_ID),
       );
 
-      return result?.configuration ?? null;
+      if (!result) {
+        return null;
+      }
+
+      if (!isDashboardConfiguration(result.configuration)) {
+        console.error('Invalid dashboard configuration in IndexedDB.');
+        return null;
+      }
+
+      return result.configuration;
     } catch (error) {
       console.error('Failed to load dashboard configuration from IndexedDB.', error);
       throw error;

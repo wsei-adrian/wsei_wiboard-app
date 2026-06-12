@@ -1,4 +1,5 @@
 import type { DashboardConfiguration } from '../dashboard/dashboard.types';
+import { isDashboardConfiguration } from '../dashboard/dashboard-configuration-validation';
 import type { DashboardConfigurationProvider } from './dashboard-configuration-provider';
 
 const DEFAULT_STORAGE_KEY = 'wiboard.dashboard.configuration';
@@ -27,7 +28,14 @@ export class LocalStorageDashboardConfigurationProvider implements DashboardConf
     }
 
     try {
-      return JSON.parse(value) as DashboardConfiguration;
+      const parsedValue = JSON.parse(value) as unknown;
+
+      if (!isDashboardConfiguration(parsedValue)) {
+        console.error('Invalid dashboard configuration in LocalStorage.');
+        return null;
+      }
+
+      return parsedValue;
     } catch (error) {
       console.error('Invalid dashboard configuration in LocalStorage.', error);
       return null;
