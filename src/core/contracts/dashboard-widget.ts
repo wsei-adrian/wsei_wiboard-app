@@ -4,5 +4,9 @@ export interface DashboardWidget<TConfig> {
   invalidate(): Promise<void>;
   setConfig(config: TConfig): void;
   getConfig(): TConfig;
-  onConfigUpdated(callback: (config: TConfig) => void): void;
+  onConfigUpdated(config: TConfig): void;
+}
+
+export interface DashboardWidgetWithConfigEvents<TConfig> extends DashboardWidget<TConfig> {
+  subscribeConfigUpdated(callback: (config: TConfig) => void): void;
 }

@@ -1,6 +1,6 @@
-import type { DashboardWidget } from '../contracts/dashboard-widget';
+import type { DashboardWidgetWithConfigEvents } from '../contracts/dashboard-widget';
 
-export abstract class BaseDashboardWidget<TConfig> implements DashboardWidget<TConfig> {
+export abstract class BaseDashboardWidget<TConfig> implements DashboardWidgetWithConfigEvents<TConfig> {
   protected element: HTMLElement | null = null;
   protected config: TConfig | undefined;
   private readonly configUpdatedCallbacks: Array<(config: TConfig) => void> = [];
@@ -30,7 +30,7 @@ export abstract class BaseDashboardWidget<TConfig> implements DashboardWidget<TC
   setConfig(config: TConfig): void {
     this.config = config;
     void this.invalidate();
-    this.configUpdatedCallbacks.forEach((callback) => callback(config));
+    this.onConfigUpdated(config);
   }
 
   getConfig(): TConfig {
@@ -41,7 +41,11 @@ export abstract class BaseDashboardWidget<TConfig> implements DashboardWidget<TC
     return this.config;
   }
 
-  onConfigUpdated(callback: (config: TConfig) => void): void {
+  onConfigUpdated(config: TConfig): void {
+    this.configUpdatedCallbacks.forEach((callback) => callback(config));
+  }
+
+  subscribeConfigUpdated(callback: (config: TConfig) => void): void {
     this.configUpdatedCallbacks.push(callback);
   }
 

@@ -1,4 +1,4 @@
-import type { DashboardWidget } from '../core/contracts/dashboard-widget';
+import type { DashboardWidgetWithConfigEvents } from '../core/contracts/dashboard-widget';
 import type { DashboardConfigurationProvider } from '../storage/dashboard-configuration-provider';
 import type { WidgetRegistry } from '../widgets/common/widget-registry';
 import { ConfigurationProviderSelector } from './configuration-provider-selector';
@@ -19,7 +19,7 @@ export class Dashboard {
   private readonly providerSelector: ConfigurationProviderSelector;
   private readonly widgetRegistry: WidgetRegistry;
   private readonly feedback = new DashboardFeedback();
-  private readonly widgets = new Map<string, DashboardWidget<unknown>>();
+  private readonly widgets = new Map<string, DashboardWidgetWithConfigEvents<unknown>>();
   private configuration: DashboardConfiguration = { widgets: [] };
   private widgetListElement: HTMLElement | null = null;
   private providerLabelElement: HTMLElement | null = null;
@@ -235,7 +235,7 @@ export class Dashboard {
 
     try {
       const widget = this.widgetRegistry.createWidget(widgetConfiguration.type);
-      widget.onConfigUpdated((config) => {
+      widget.subscribeConfigUpdated((config) => {
         widgetConfiguration.config = config;
         void this.saveConfiguration();
       });

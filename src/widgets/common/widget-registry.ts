@@ -1,10 +1,10 @@
-import type { DashboardWidget } from '../../core/contracts/dashboard-widget';
+import type { DashboardWidgetWithConfigEvents } from '../../core/contracts/dashboard-widget';
 import type { DashboardWidgetType } from '../../dashboard/dashboard.types';
 
 export interface WidgetRegistryItem {
   type: DashboardWidgetType;
   title: string;
-  createWidget(): DashboardWidget<unknown>;
+  createWidget(): DashboardWidgetWithConfigEvents<unknown>;
   createDefaultConfig(): unknown;
 }
 
@@ -33,7 +33,7 @@ export class WidgetRegistry {
     return item;
   }
 
-  createWidget(type: DashboardWidgetType): DashboardWidget<unknown> {
+  createWidget(type: DashboardWidgetType): DashboardWidgetWithConfigEvents<unknown> {
     return this.getItem(type).createWidget();
   }
 
