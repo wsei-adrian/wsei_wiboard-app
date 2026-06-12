@@ -90,18 +90,9 @@
     margin: 0 auto 16px;
     padding: 12px 14px;
     border-radius: 8px;
-}
-
-.dashboard__feedback[data-type="error"] {
     border: 1px solid #fecdca;
     background: #fffbfa;
     color: #b42318;
-}
-
-.dashboard__feedback[data-type="info"] {
-    border: 1px solid #bfdbfe;
-    background: #eff6ff;
-    color: #1d4ed8;
 }
 
 .dashboard__widget-card {

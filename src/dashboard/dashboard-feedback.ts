@@ -1,5 +1,3 @@
-export type DashboardFeedbackType = 'error' | 'info';
-
 export class DashboardFeedback {
   private element: HTMLElement | null = null;
 
@@ -7,13 +5,12 @@ export class DashboardFeedback {
     this.element = element;
   }
 
-  show(message: string, type: DashboardFeedbackType = 'error'): void {
+  show(message: string): void {
     if (!this.element) {
       return;
     }
 
     this.element.textContent = message;
-    this.element.dataset.type = type;
     this.element.hidden = false;
   }
 
@@ -23,7 +20,6 @@ export class DashboardFeedback {
     }
 
     this.element.textContent = '';
-    delete this.element.dataset.type;
     this.element.hidden = true;
   }
 }

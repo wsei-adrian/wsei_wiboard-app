@@ -191,13 +191,6 @@ export class Dashboard {
     const loadResult = await this.loadConfiguration();
     this.configuration = loadResult.configuration;
     await this.renderWidgets();
-
-    if (!loadResult.failed) {
-      this.feedback.show(
-        `Loaded configuration from ${provider.label}. Existing widgets were not copied between storage providers.`,
-        'info',
-      );
-    }
   }
 
   private updateProviderLabel(): void {
