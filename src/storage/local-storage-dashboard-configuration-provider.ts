@@ -51,12 +51,4 @@ export class LocalStorageDashboardConfigurationProvider implements DashboardConf
     }
   }
 
-  async clearConfiguration(): Promise<void> {
-    try {
-      window.localStorage.removeItem(this.storageKey);
-    } catch (error) {
-      console.error('Failed to clear dashboard configuration from LocalStorage.', error);
-      throw error;
-    }
-  }
 }

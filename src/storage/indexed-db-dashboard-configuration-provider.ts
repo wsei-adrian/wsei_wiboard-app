@@ -66,22 +66,6 @@ export class IndexedDbDashboardConfigurationProvider implements DashboardConfigu
     }
   }
 
-  async clearConfiguration(): Promise<void> {
-    const database = await this.openDatabase();
-
-    try {
-      const transaction = database.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-
-      await this.requestToPromise(store.delete(CONFIGURATION_ID));
-    } catch (error) {
-      console.error('Failed to clear dashboard configuration from IndexedDB.', error);
-      throw error;
-    } finally {
-      database.close();
-    }
-  }
-
   private openDatabase(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
       const request = window.indexedDB.open(DATABASE_NAME, DATABASE_VERSION);

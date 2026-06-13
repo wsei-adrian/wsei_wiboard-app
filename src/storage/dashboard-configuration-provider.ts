@@ -6,5 +6,4 @@ export interface DashboardConfigurationProvider {
 
   loadConfiguration(): Promise<DashboardConfiguration | null>;
   saveConfiguration(configuration: DashboardConfiguration): Promise<void>;
-  clearConfiguration?(): Promise<void>;
 }
