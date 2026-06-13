@@ -14,7 +14,6 @@ export class Dashboard {
   private readonly widgetRenderer: DashboardWidgetRenderer;
   private configuration: DashboardConfiguration = { widgets: [] };
   private widgetListElement: HTMLElement | null = null;
-  private providerLabelElement: HTMLElement | null = null;
   private feedbackElement: HTMLElement | null = null;
 
   constructor(
@@ -48,10 +47,6 @@ export class Dashboard {
       <header class="dashboard__header">
         <div>
           <h1 class="dashboard__title">WiBoard</h1>
-          <p class="dashboard__subtitle">
-            Configuration provider:
-            <span class="dashboard__provider-label">${this.getConfigurationProvider().label}</span>
-          </p>
         </div>
         <div class="dashboard__controls">
           <label class="dashboard__control">
@@ -77,7 +72,6 @@ export class Dashboard {
     `;
 
     this.widgetListElement = element.querySelector<HTMLElement>('.dashboard__widgets');
-    this.providerLabelElement = element.querySelector<HTMLElement>('.dashboard__provider-label');
     this.feedbackElement = element.querySelector<HTMLElement>('.dashboard__feedback');
     const addButton = element.querySelector<HTMLElement>('.dashboard__button');
     const providerSelect = element.querySelector<HTMLSelectElement>('.dashboard__provider-select');
@@ -158,16 +152,8 @@ export class Dashboard {
       return;
     }
 
-    this.updateProviderLabel();
-
     this.configuration = await this.loadConfiguration();
     await this.renderWidgets();
-  }
-
-  private updateProviderLabel(): void {
-    if (this.providerLabelElement) {
-      this.providerLabelElement.textContent = this.getConfigurationProvider().label;
-    }
   }
 
   private async addWidget(type: DashboardWidgetType): Promise<void> {
