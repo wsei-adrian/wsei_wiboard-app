@@ -51,7 +51,9 @@ export class DashboardWidgetRenderer {
     cardElement.innerHTML = `
       <header class="dashboard__widget-header">
         <h2 class="dashboard__widget-title">${widgetConfiguration.title}</h2>
-        <button class="dashboard__icon-button" type="button">Remove</button>
+        <wa-button class="dashboard__icon-button" type="button" appearance="plain" size="small">
+          <wa-icon name="trash"></wa-icon>
+        </wa-button>
       </header>
       <div class="dashboard__widget-body"></div>
     `;
@@ -59,7 +61,7 @@ export class DashboardWidgetRenderer {
     target.appendChild(cardElement);
 
     const bodyElement = cardElement.querySelector<HTMLElement>('.dashboard__widget-body');
-    const removeButton = cardElement.querySelector<HTMLButtonElement>('.dashboard__icon-button');
+    const removeButton = cardElement.querySelector<HTMLElement>('.dashboard__icon-button');
 
     removeButton?.addEventListener('click', () => {
       this.callbacks.removeWidget(widgetConfiguration.id);

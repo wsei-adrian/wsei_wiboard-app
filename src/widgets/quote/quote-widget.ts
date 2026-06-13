@@ -35,13 +35,15 @@ export class QuoteWidget extends BaseDashboardWidget<QuoteWidgetConfig> {
         <select class="quote-widget__select">
           ${this.createProviderOptions(config.providerId)}
         </select>
-        <button class="quote-widget__button" type="button">New quote</button>
+        <wa-button class="quote-widget__button" type="button" appearance="outlined">
+          New quote
+        </wa-button>
       </div>
       ${this.createContent()}
     `;
 
     const select = element.querySelector<HTMLSelectElement>('.quote-widget__select');
-    const button = element.querySelector<HTMLButtonElement>('.quote-widget__button');
+    const button = element.querySelector<HTMLElement>('.quote-widget__button');
 
     select?.addEventListener('change', () => {
       this.setConfig({ providerId: select.value });

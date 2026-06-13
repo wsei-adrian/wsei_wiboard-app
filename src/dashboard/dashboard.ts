@@ -66,7 +66,10 @@ export class Dashboard {
               ${this.createWidgetTypeOptions()}
             </select>
           </label>
-          <button class="dashboard__button" type="button">Add widget</button>
+          <wa-button class="dashboard__button" type="button" variant="brand" appearance="filled">
+            <wa-icon slot="start" name="plus"></wa-icon>
+            Add widget
+          </wa-button>
         </div>
       </header>
       <p class="dashboard__feedback" hidden></p>
@@ -76,7 +79,7 @@ export class Dashboard {
     this.widgetListElement = element.querySelector<HTMLElement>('.dashboard__widgets');
     this.providerLabelElement = element.querySelector<HTMLElement>('.dashboard__provider-label');
     this.feedbackElement = element.querySelector<HTMLElement>('.dashboard__feedback');
-    const addButton = element.querySelector<HTMLButtonElement>('.dashboard__button');
+    const addButton = element.querySelector<HTMLElement>('.dashboard__button');
     const providerSelect = element.querySelector<HTMLSelectElement>('.dashboard__provider-select');
     const widgetTypeSelect = element.querySelector<HTMLSelectElement>('.dashboard__widget-type-select');
 
