@@ -1,0 +1,46 @@
+.backend-auth {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(15, 23, 42, 0.28);
+  backdrop-filter: blur(6px);
+}
+
+.backend-auth__panel {
+  display: grid;
+  gap: 14px;
+  width: min(380px, 100%);
+  box-sizing: border-box;
+  padding: 22px;
+  border: 1px solid var(--app-color-border);
+  border-radius: 14px;
+  background: var(--app-color-surface);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+}
+
+.backend-auth__title,
+.backend-auth__text,
+.backend-auth__error {
+  margin: 0;
+}
+
+.backend-auth__title {
+  font-size: 22px;
+}
+
+.backend-auth__text {
+  color: var(--app-color-text-muted);
+}
+
+.backend-auth__error {
+  color: #b42318;
+}
+
+.backend-auth__actions {
+  display: flex;
+  justify-content: end;
+  gap: 8px;
+}

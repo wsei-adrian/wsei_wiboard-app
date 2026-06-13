@@ -1,6 +1,6 @@
 import { Client } from './generated/client';
 
-const BACKEND_BASE_URL = 'https://wiboard-backend.runasp.net/';
+const BACKEND_BASE_URL = 'https://wiboard-backend.runasp.net';
 
 export interface AccessTokenProvider {
   getAccessToken(): Promise<string>;
