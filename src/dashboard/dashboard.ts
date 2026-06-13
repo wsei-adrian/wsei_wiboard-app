@@ -1,11 +1,10 @@
-import type { DashboardWidgetWithConfigEvents } from '../core/contracts/dashboard-widget';
 import type { DashboardConfigurationProvider } from '../storage/dashboard-configuration-provider';
 import type { WidgetRegistry } from '../widgets/common/widget-registry';
 import { ConfigurationProviderSelector } from './configuration-provider-selector';
 import { DashboardFeedback } from './dashboard-feedback';
+import { DashboardWidgetRenderer } from './dashboard-widget-renderer';
 import type {
   DashboardConfiguration,
-  DashboardWidgetInstanceConfiguration,
   DashboardWidgetType,
 } from './dashboard.types';
 import './dashboard.scss';
@@ -19,7 +18,7 @@ export class Dashboard {
   private readonly providerSelector: ConfigurationProviderSelector;
   private readonly widgetRegistry: WidgetRegistry;
   private readonly feedback = new DashboardFeedback();
-  private readonly widgets = new Map<string, DashboardWidgetWithConfigEvents<unknown>>();
+  private readonly widgetRenderer: DashboardWidgetRenderer;
   private configuration: DashboardConfiguration = { widgets: [] };
   private widgetListElement: HTMLElement | null = null;
   private providerLabelElement: HTMLElement | null = null;
@@ -30,6 +29,14 @@ export class Dashboard {
   ) {
     this.providerSelector = new ConfigurationProviderSelector(configurationProviders);
     this.widgetRegistry = widgetRegistry;
+    this.widgetRenderer = new DashboardWidgetRenderer(widgetRegistry, {
+      saveConfiguration: () => {
+        void this.saveConfiguration();
+      },
+      removeWidget: (id) => {
+        void this.removeWidget(id);
+      },
+    });
   }
 
   async mount(target: HTMLElement): Promise<void> {
@@ -156,27 +163,7 @@ export class Dashboard {
   }
 
   private async renderWidgets(): Promise<void> {
-    const widgetListElement = this.getWidgetListElement();
-
-    await this.unmountWidgets();
-    widgetListElement.innerHTML = '';
-
-    if (this.configuration.widgets.length === 0) {
-      this.renderEmptyState(widgetListElement);
-      return;
-    }
-
-    for (const widgetConfiguration of this.configuration.widgets) {
-      await this.mountWidget(widgetListElement, widgetConfiguration);
-    }
-  }
-
-  private renderEmptyState(widgetListElement: HTMLElement): void {
-    const emptyStateElement = document.createElement('p');
-    emptyStateElement.className = 'dashboard__empty-state';
-    emptyStateElement.textContent = 'No widgets yet. Add one from the dashboard controls.';
-
-    widgetListElement.appendChild(emptyStateElement);
+    await this.widgetRenderer.render(this.getWidgetListElement(), this.configuration);
   }
 
   private async changeConfigurationProvider(providerId: string): Promise<void> {
@@ -199,48 +186,6 @@ export class Dashboard {
     }
   }
 
-  private async mountWidget(
-    widgetListElement: HTMLElement,
-    widgetConfiguration: DashboardWidgetInstanceConfiguration,
-  ): Promise<void> {
-    const cardElement = document.createElement('article');
-    cardElement.className = 'dashboard__widget-card';
-    cardElement.innerHTML = `
-      <header class="dashboard__widget-header">
-        <h2 class="dashboard__widget-title">${widgetConfiguration.title}</h2>
-        <button class="dashboard__icon-button" type="button">Remove</button>
-      </header>
-      <div class="dashboard__widget-body"></div>
-    `;
-
-    widgetListElement.appendChild(cardElement);
-
-    const bodyElement = cardElement.querySelector<HTMLElement>('.dashboard__widget-body');
-    const removeButton = cardElement.querySelector<HTMLButtonElement>('.dashboard__icon-button');
-
-    removeButton?.addEventListener('click', () => {
-      void this.removeWidget(widgetConfiguration.id);
-    });
-
-    if (!bodyElement) {
-      return;
-    }
-
-    try {
-      const widget = this.widgetRegistry.createWidget(widgetConfiguration.type);
-      widget.subscribeConfigUpdated((config) => {
-        widgetConfiguration.config = config;
-        void this.saveConfiguration();
-      });
-
-      this.widgets.set(widgetConfiguration.id, widget);
-      await widget.mount(bodyElement, widgetConfiguration.config);
-    } catch (error) {
-      console.error('Failed to mount widget.', error);
-      bodyElement.textContent = 'Widget could not be loaded.';
-    }
-  }
-
   private async addWidget(type: DashboardWidgetType): Promise<void> {
     const item = this.widgetRegistry.getItem(type);
 
@@ -260,14 +205,6 @@ export class Dashboard {
 
     await this.saveConfiguration();
     await this.renderWidgets();
-  }
-
-  private async unmountWidgets(): Promise<void> {
-    for (const widget of this.widgets.values()) {
-      await widget.unmount();
-    }
-
-    this.widgets.clear();
   }
 
   private async saveConfiguration(): Promise<void> {
