@@ -105,7 +105,6 @@ export class BackendAuthService {
         reject(new Error('Backend login was cancelled.'));
       });
 
-      loginInput?.focus();
     });
   }
 }
