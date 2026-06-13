@@ -1,4 +1,4 @@
-export type DashboardWidgetType = 'digital-clock' | 'weather' | 'news' | 'quote';
+export type DashboardWidgetType = string;
 
 export interface DashboardWidgetInstanceConfiguration {
   id: string;
