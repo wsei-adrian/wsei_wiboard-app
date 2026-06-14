@@ -47,7 +47,7 @@ export class QuoteWidget
             ${this.createProviderOptions(config.providerId)}
           </select>
         </label>
-        <wa-button class="quote-widget__button" type="button" appearance="outlined">
+        <wa-button class="quote-widget__button" type="button" type="submit" size="small" variant="brand" appearance="filled">
           New quote
         </wa-button>
       </div>
