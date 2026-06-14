@@ -10,3 +10,8 @@ export interface DashboardWidget<TConfig> {
 export interface DashboardWidgetWithConfigEvents<TConfig> extends DashboardWidget<TConfig> {
   subscribeConfigUpdated(callback: (config: TConfig) => void): void;
 }
+
+export interface DashboardWidgetWithSettings<TConfig>
+  extends DashboardWidgetWithConfigEvents<TConfig> {
+  renderSettings(target: HTMLElement): void;
+}

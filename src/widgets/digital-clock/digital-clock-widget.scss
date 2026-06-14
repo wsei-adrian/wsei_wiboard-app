@@ -10,11 +10,17 @@
 }
 
 .digital-clock-widget__settings {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: grid;
+  gap: 4px;
+  color: var(--app-color-text-muted);
+  font-size: 13px;
 }
 
 .digital-clock-widget__select {
   min-width: 120px;
+  min-height: 36px;
+  border: 1px solid var(--app-color-border);
+  border-radius: 8px;
+  background: var(--app-color-surface);
+  color: var(--app-color-text);
 }

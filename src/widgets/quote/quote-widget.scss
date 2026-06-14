@@ -5,13 +5,29 @@
 
 .quote-widget__controls {
   display: flex;
-  align-items: center;
+  flex-wrap: wrap;
+  align-items: end;
   gap: 8px;
+}
+
+.quote-widget__settings {
+  display: grid;
+  flex: 1 1 180px;
+  gap: 4px;
+  color: var(--app-color-text-muted);
+  font-size: 13px;
 }
 
 .quote-widget__select,
 .quote-widget__button {
   min-height: 36px;
+}
+
+.quote-widget__select {
+  border: 1px solid var(--app-color-border);
+  border-radius: 8px;
+  background: var(--app-color-surface);
+  color: var(--app-color-text);
 }
 
 .quote-widget__button {

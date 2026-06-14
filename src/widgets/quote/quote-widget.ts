@@ -1,8 +1,11 @@
+import type { DashboardWidgetWithSettings } from '../../core/contracts/dashboard-widget';
 import { BaseDashboardWidget } from '../../core/widgets/base-dashboard-widget';
 import type { Quote, QuoteProvider, QuoteWidgetConfig } from './quote-widget.types';
 import './quote-widget.scss';
 
-export class QuoteWidget extends BaseDashboardWidget<QuoteWidgetConfig> {
+export class QuoteWidget
+  extends BaseDashboardWidget<QuoteWidgetConfig>
+  implements DashboardWidgetWithSettings<QuoteWidgetConfig> {
   private readonly providers: QuoteProvider[];
   private quote: Quote | null = null;
   private isLoading = false;
@@ -29,21 +32,29 @@ export class QuoteWidget extends BaseDashboardWidget<QuoteWidgetConfig> {
     return element;
   }
 
-  protected render(element: HTMLElement, config: QuoteWidgetConfig): void {
-    element.innerHTML = `
+  protected render(element: HTMLElement, _config: QuoteWidgetConfig): void {
+    element.innerHTML = this.createContent();
+  }
+
+  renderSettings(target: HTMLElement): void {
+    const config = this.getConfig();
+
+    target.innerHTML = `
       <div class="quote-widget__controls">
-        <select class="quote-widget__select">
-          ${this.createProviderOptions(config.providerId)}
-        </select>
+        <label class="quote-widget__settings">
+          Provider
+          <select class="quote-widget__select">
+            ${this.createProviderOptions(config.providerId)}
+          </select>
+        </label>
         <wa-button class="quote-widget__button" type="button" appearance="outlined">
           New quote
         </wa-button>
       </div>
-      ${this.createContent()}
     `;
 
-    const select = element.querySelector<HTMLSelectElement>('.quote-widget__select');
-    const button = element.querySelector<HTMLElement>('.quote-widget__button');
+    const select = target.querySelector<HTMLSelectElement>('.quote-widget__select');
+    const button = target.querySelector<HTMLElement>('.quote-widget__button');
 
     select?.addEventListener('change', () => {
       this.setConfig({ providerId: select.value });
@@ -58,7 +69,7 @@ export class QuoteWidget extends BaseDashboardWidget<QuoteWidgetConfig> {
     return this.providers
       .map((provider) => {
         const selected = provider.id === selectedProviderId ? 'selected' : '';
-        return `<option value="${provider.id}" ${selected}>${provider.label}</option>`;
+        return `<option value="${this.escapeAttribute(provider.id)}" ${selected}>${this.escapeHtml(provider.label)}</option>`;
       })
       .join('');
   }
@@ -123,5 +134,9 @@ export class QuoteWidget extends BaseDashboardWidget<QuoteWidgetConfig> {
     const element = document.createElement('div');
     element.textContent = value;
     return element.innerHTML;
+  }
+
+  private escapeAttribute(value: string): string {
+    return this.escapeHtml(value).replace(/"/g, '&quot;');
   }
 }

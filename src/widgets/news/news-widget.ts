@@ -1,8 +1,11 @@
+import type { DashboardWidgetWithSettings } from '../../core/contracts/dashboard-widget';
 import { BaseDashboardWidget } from '../../core/widgets/base-dashboard-widget';
 import type { NewsArticle, NewsProvider, NewsWidgetConfig } from './news-widget.types';
 import './news-widget.scss';
 
-export class NewsWidget extends BaseDashboardWidget<NewsWidgetConfig> {
+export class NewsWidget
+  extends BaseDashboardWidget<NewsWidgetConfig>
+  implements DashboardWidgetWithSettings<NewsWidgetConfig> {
   private readonly provider: NewsProvider;
   private articles: NewsArticle[] = [];
   private isLoading = false;
@@ -24,14 +27,10 @@ export class NewsWidget extends BaseDashboardWidget<NewsWidgetConfig> {
     void this.loadNews(config.topic);
   }
 
-  protected createElement(): HTMLElement {
-    const element = document.createElement('section');
-    element.className = 'news-widget';
-    return element;
-  }
+  renderSettings(target: HTMLElement): void {
+    const config = this.getConfig();
 
-  protected render(element: HTMLElement, config: NewsWidgetConfig): void {
-    element.innerHTML = `
+    target.innerHTML = `
       <form class="news-widget__controls">
         <wa-input
           class="news-widget__input"
@@ -45,11 +44,10 @@ export class NewsWidget extends BaseDashboardWidget<NewsWidgetConfig> {
           Search
         </wa-button>
       </form>
-      ${this.createContent(config.topic)}
     `;
 
-    const form = element.querySelector<HTMLFormElement>('.news-widget__controls');
-    const input = element.querySelector<HTMLElement & { value: string }>('.news-widget__input');
+    const form = target.querySelector<HTMLFormElement>('.news-widget__controls');
+    const input = target.querySelector<HTMLElement & { value: string }>('.news-widget__input');
 
     form?.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -63,6 +61,16 @@ export class NewsWidget extends BaseDashboardWidget<NewsWidgetConfig> {
 
       this.setConfig({ topic });
     });
+  }
+
+  protected createElement(): HTMLElement {
+    const element = document.createElement('section');
+    element.className = 'news-widget';
+    return element;
+  }
+
+  protected render(element: HTMLElement, config: NewsWidgetConfig): void {
+    element.innerHTML = this.createContent(config.topic);
   }
 
   private createContent(topic: string): string {

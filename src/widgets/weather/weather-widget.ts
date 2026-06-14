@@ -1,3 +1,4 @@
+import type { DashboardWidgetWithSettings } from '../../core/contracts/dashboard-widget';
 import { BaseDashboardWidget } from '../../core/widgets/base-dashboard-widget';
 import type {
   CurrentWeather,
@@ -8,7 +9,9 @@ import './weather-widget.scss';
 
 const WEATHER_REFRESH_INTERVAL_MS = 60_000;
 
-export class WeatherWidget extends BaseDashboardWidget<WeatherWidgetConfig> {
+export class WeatherWidget
+  extends BaseDashboardWidget<WeatherWidgetConfig>
+  implements DashboardWidgetWithSettings<WeatherWidgetConfig> {
   private readonly provider: WeatherProvider;
   private weather: CurrentWeather | null = null;
   private isLoading = false;
@@ -39,14 +42,10 @@ export class WeatherWidget extends BaseDashboardWidget<WeatherWidgetConfig> {
     void this.loadWeather(config.location);
   }
 
-  protected createElement(): HTMLElement {
-    const element = document.createElement('section');
-    element.className = 'weather-widget';
-    return element;
-  }
+  renderSettings(target: HTMLElement): void {
+    const config = this.getConfig();
 
-  protected render(element: HTMLElement, config: WeatherWidgetConfig): void {
-    element.innerHTML = `
+    target.innerHTML = `
       <form class="weather-widget__controls">
         <wa-input
           class="weather-widget__input"
@@ -60,11 +59,10 @@ export class WeatherWidget extends BaseDashboardWidget<WeatherWidgetConfig> {
           Update
         </wa-button>
       </form>
-      ${this.createContent(config.location)}
     `;
 
-    const form = element.querySelector<HTMLFormElement>('.weather-widget__controls');
-    const input = element.querySelector<HTMLElement & { value: string }>('.weather-widget__input');
+    const form = target.querySelector<HTMLFormElement>('.weather-widget__controls');
+    const input = target.querySelector<HTMLElement & { value: string }>('.weather-widget__input');
 
     form?.addEventListener('submit', (event) => {
       event.preventDefault();
@@ -78,6 +76,16 @@ export class WeatherWidget extends BaseDashboardWidget<WeatherWidgetConfig> {
 
       this.setConfig({ location });
     });
+  }
+
+  protected createElement(): HTMLElement {
+    const element = document.createElement('section');
+    element.className = 'weather-widget';
+    return element;
+  }
+
+  protected render(element: HTMLElement, config: WeatherWidgetConfig): void {
+    element.innerHTML = this.createContent(config.location);
   }
 
   private createContent(location: string): string {

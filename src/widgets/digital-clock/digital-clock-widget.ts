@@ -1,3 +1,4 @@
+import type { DashboardWidgetWithSettings } from '../../core/contracts/dashboard-widget';
 import { BaseDashboardWidget } from '../../core/widgets/base-dashboard-widget';
 import type { DigitalClockFormat, DigitalClockWidgetConfig } from './digital-clock-widget.types';
 import './digital-clock-widget.scss';
@@ -5,7 +6,9 @@ import './digital-clock-widget.scss';
 const SECOND_MS = 1000;
 const MINUTE_MS = 60 * SECOND_MS;
 
-export class DigitalClockWidget extends BaseDashboardWidget<DigitalClockWidgetConfig> {
+export class DigitalClockWidget
+  extends BaseDashboardWidget<DigitalClockWidgetConfig>
+  implements DashboardWidgetWithSettings<DigitalClockWidgetConfig> {
   private intervalId: number | undefined;
 
   async mount(target: HTMLElement, initialConfig: DigitalClockWidgetConfig): Promise<void> {
@@ -34,6 +37,13 @@ export class DigitalClockWidget extends BaseDashboardWidget<DigitalClockWidgetCo
 
     element.innerHTML = `
       <div class="digital-clock-widget__time">${time}</div>
+    `;
+  }
+
+  renderSettings(target: HTMLElement): void {
+    const config = this.getConfig();
+
+    target.innerHTML = `
       <label class="digital-clock-widget__settings">
         Format
         <select class="digital-clock-widget__select">
@@ -43,7 +53,7 @@ export class DigitalClockWidget extends BaseDashboardWidget<DigitalClockWidgetCo
       </label>
     `;
 
-    const select = element.querySelector<HTMLSelectElement>('.digital-clock-widget__select');
+    const select = target.querySelector<HTMLSelectElement>('.digital-clock-widget__select');
 
     if (select) {
       select.value = config.format;

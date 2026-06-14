@@ -73,7 +73,7 @@
 
 .dashboard__widgets {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
     gap: 16px;
     max-width: 1100px;
     margin: 0 auto;
@@ -110,6 +110,61 @@
 .dashboard__widget-title {
     margin: 0;
     font-size: 18px;
+}
+
+.dashboard__widget-actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.dashboard__icon-button {
+    cursor: pointer;
+}
+
+.dashboard__settings-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: grid;
+    place-items: center;
+    padding: 20px;
+    background: rgba(15, 23, 42, 0.28);
+    backdrop-filter: blur(6px);
+}
+
+.dashboard__settings-panel {
+    display: grid;
+    gap: 16px;
+    width: min(420px, 100%);
+    box-sizing: border-box;
+    padding: 22px;
+    border: 1px solid var(--app-color-border);
+    border-radius: 14px;
+    background: var(--app-color-surface);
+    box-shadow: 0 24px 60px rgba(15, 23, 42, 0.22);
+}
+
+.dashboard__settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.dashboard__settings-title {
+    margin: 0;
+    font-size: 22px;
+}
+
+.dashboard__settings-body {
+    display: grid;
+    gap: 14px;
+}
+
+.dashboard__settings-actions {
+    display: flex;
+    justify-content: end;
 }
 
 .dashboard__empty-state {
