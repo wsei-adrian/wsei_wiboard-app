@@ -1,0 +1,2 @@
+15396; Adrian Mazur; backend, dashboard, storage, quote widget, digital-clock widget
+15237; Kacper Krupa; dashboard, storage, news widget, weather widget
