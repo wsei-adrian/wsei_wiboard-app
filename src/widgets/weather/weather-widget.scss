@@ -1,0 +1,72 @@
+.weather-widget {
+  display: grid;
+  gap: 16px;
+}
+
+.weather-widget__controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 8px;
+}
+
+.weather-widget__input {
+  flex: 1 1 180px;
+  min-width: 0;
+}
+
+.weather-widget__button {
+  min-height: 36px;
+  cursor: pointer;
+}
+
+.weather-widget__summary {
+  display: grid;
+  gap: 10px;
+}
+
+.weather-widget__place {
+  margin: 0;
+  font-size: 18px;
+}
+
+.weather-widget__temperature {
+  font-size: 40px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.weather-widget__condition,
+.weather-widget__state,
+.weather-widget__warning,
+.weather-widget__error {
+  margin: 0;
+}
+
+.weather-widget__details {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid var(--app-color-border);
+  color: var(--app-color-text-muted);
+  font-size: 13px;
+}
+
+.weather-widget__details div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.weather-widget__updating {
+  color: var(--app-color-text-muted);
+}
+
+.weather-widget__warning {
+  color: #b54708;
+}
+
+.weather-widget__error {
+  color: #b42318;
+}

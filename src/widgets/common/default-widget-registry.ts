@@ -1,10 +1,12 @@
 import { DigitalClockWidget } from '../digital-clock/digital-clock-widget';
+import { GoogleNewsProvider } from '../news/google-news-provider';
+import { NewsWidget } from '../news/news-widget';
 import { DummyJsonQuoteProvider } from '../quote/dummy-json-quote-provider';
 import { LocalQuoteProvider } from '../quote/local-quote-provider';
 import { QuoteWidget } from '../quote/quote-widget';
-import { NewsWidget } from '../news/news-widget';
+import { OpenMeteoWeatherProvider } from '../weather/open-meteo-weather-provider';
+import { WeatherWidget } from '../weather/weather-widget';
 import { WidgetRegistry } from './widget-registry';
-import { WeatherWidget } from '../weather/weather-widget'; 
 
 export function createDefaultWidgetRegistry(): WidgetRegistry {
   return new WidgetRegistry([
@@ -23,15 +25,15 @@ export function createDefaultWidgetRegistry(): WidgetRegistry {
     },
     {
       type: 'news',
-      title: 'News Widget',
-      createWidget: () => new NewsWidget(),
+      title: 'News',
+      createWidget: () => new NewsWidget(new GoogleNewsProvider()),
       createDefaultConfig: () => ({ topic: 'technology' }),
     },
     {
       type: 'weather',
-      title: 'Weather Widget',
-      createWidget: () => new WeatherWidget(),
-      createDefaultConfig: () => ({ location: 'Kraków' }), 
-    }
+      title: 'Weather',
+      createWidget: () => new WeatherWidget(new OpenMeteoWeatherProvider()),
+      createDefaultConfig: () => ({ location: 'Krakow' }),
+    },
   ]);
 }

@@ -1,89 +1,181 @@
 import { BaseDashboardWidget } from '../../core/widgets/base-dashboard-widget';
-
-export interface NewsWidgetConfig {
-  topic: string;
-}
+import type { NewsArticle, NewsProvider, NewsWidgetConfig } from './news-widget.types';
+import './news-widget.scss';
 
 export class NewsWidget extends BaseDashboardWidget<NewsWidgetConfig> {
+  private readonly provider: NewsProvider;
+  private articles: NewsArticle[] = [];
+  private isLoading = false;
+  private errorMessage: string | null = null;
+  private requestId = 0;
+
+  constructor(provider: NewsProvider) {
+    super();
+    this.provider = provider;
+  }
+
+  async mount(target: HTMLElement, initialConfig: NewsWidgetConfig): Promise<void> {
+    await super.mount(target, initialConfig);
+    await this.loadNews(initialConfig.topic);
+  }
+
+  setConfig(config: NewsWidgetConfig): void {
+    super.setConfig(config);
+    void this.loadNews(config.topic);
+  }
+
   protected createElement(): HTMLElement {
-    const element = document.createElement('div');
-    element.className = 'widget-news';
-    element.style.display = 'flex';
-    element.style.flexDirection = 'column';
-    element.style.gap = '0.5rem';
+    const element = document.createElement('section');
+    element.className = 'news-widget';
     return element;
   }
 
   protected render(element: HTMLElement, config: NewsWidgetConfig): void {
     element.innerHTML = `
-      <form class="widget-news__settings" style="display: flex; gap: 0.5rem; align-items: flex-end;">
-        <wa-input 
-          class="widget-news__topic-input" 
-          name="topic" 
-          label="Tematyka" 
-          size="small" 
-          value="${config.topic}" 
-          placeholder="np. technologia, gospodarka, gaming">
+      <form class="news-widget__controls">
+        <wa-input
+          class="news-widget__input"
+          name="topic"
+          label="Topic"
+          size="small"
+          value="${this.escapeAttribute(config.topic)}"
+          placeholder="e.g. technology, economy, gaming">
         </wa-input>
-        <wa-button class="widget-news__save-btn" type="submit" size="small" variant="brand">Szukaj</wa-button>
+        <wa-button class="news-widget__button" type="submit" size="small" variant="brand" appearance="filled">
+          Search
+        </wa-button>
       </form>
-      <div class="widget-news__content"></div>
+      ${this.createContent(config.topic)}
     `;
 
-    const form = element.querySelector<HTMLFormElement>('.widget-news__settings');
-    const input = element.querySelector<HTMLInputElement & { value: string }>('.widget-news__topic-input');
-    const content = element.querySelector<HTMLElement>('.widget-news__content');
+    const form = element.querySelector<HTMLFormElement>('.news-widget__controls');
+    const input = element.querySelector<HTMLElement & { value: string }>('.news-widget__input');
 
-    form?.addEventListener('submit', (e) => {
-      e.preventDefault();
-      if (input && input.value.trim() !== config.topic) {
-        this.setConfig({ topic: input.value.trim() });
+    form?.addEventListener('submit', (event) => {
+      event.preventDefault();
+
+      const topic = input?.value.trim() ?? '';
+
+      if (topic === config.topic) {
+        void this.loadNews(topic);
+        return;
       }
-    });
 
-    if (config.topic) {
-      void this.fetchNews(config.topic, content!);
-    } else {
-      content!.innerHTML = '<p style="margin-top: 1rem;">Brak wybranej tematyki. Wpisz temat i kliknij Szukaj.</p>';
+      this.setConfig({ topic });
+    });
+  }
+
+  private createContent(topic: string): string {
+    const normalizedTopic = topic.trim();
+
+    if (!normalizedTopic) {
+      return '<p class="news-widget__state">Enter a topic to load news.</p>';
+    }
+
+    if (this.isLoading) {
+      return '<p class="news-widget__state">Loading news...</p>';
+    }
+
+    if (this.errorMessage) {
+      return `<p class="news-widget__error">${this.escapeHtml(this.errorMessage)}</p>`;
+    }
+
+    if (this.articles.length === 0) {
+      return `<p class="news-widget__state">No news found for ${this.escapeHtml(normalizedTopic)}.</p>`;
+    }
+
+    return `
+      <ul class="news-widget__list">
+        ${this.articles.map((article) => this.createArticleItem(article)).join('')}
+      </ul>
+    `;
+  }
+
+  private createArticleItem(article: NewsArticle): string {
+    const source = article.source
+      ? `<span>${this.escapeHtml(article.source)}</span>`
+      : '';
+    const date = this.formatDate(article.publishedAt);
+    const publishedAt = date
+      ? `<time datetime="${this.escapeAttribute(article.publishedAt ?? '')}">${date}</time>`
+      : '';
+    const separator = source && publishedAt ? '<span aria-hidden="true">|</span>' : '';
+
+    return `
+      <li class="news-widget__item">
+        <a class="news-widget__link" href="${this.escapeAttribute(article.url)}" target="_blank" rel="noreferrer">
+          ${this.escapeHtml(article.title)}
+        </a>
+        <p class="news-widget__meta">
+          ${source}
+          ${separator}
+          ${publishedAt}
+        </p>
+      </li>
+    `;
+  }
+
+  private async loadNews(topic: string): Promise<void> {
+    const requestId = ++this.requestId;
+    const normalizedTopic = topic.trim();
+
+    this.articles = [];
+    this.errorMessage = null;
+    this.isLoading = normalizedTopic.length > 0;
+    await this.invalidate();
+
+    if (!normalizedTopic) {
+      return;
+    }
+
+    try {
+      const articles = await this.provider.getArticles(normalizedTopic);
+
+      if (requestId !== this.requestId) {
+        return;
+      }
+
+      this.articles = articles;
+    } catch (error) {
+      if (requestId !== this.requestId) {
+        return;
+      }
+
+      console.error('Failed to load news.', error);
+      this.errorMessage = 'News could not be loaded.';
+    } finally {
+      if (requestId === this.requestId) {
+        this.isLoading = false;
+        await this.invalidate();
+      }
     }
   }
 
-  private async fetchNews(topic: string, container: HTMLElement): Promise<void> {
-    try {
-      container.innerHTML = '<p style="margin-top: 1rem;">Ładowanie wiadomości...</p>';
-      
-      // Zapytanie do Google News PL zakodowane i przekazane do rss2json w celu parsowania XML -> JSON oraz obejścia CORS
-      const rssUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(topic)}&hl=pl&gl=PL&ceid=PL:pl`;
-      const apiUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(rssUrl)}`;
-      
-      const response = await fetch(apiUrl);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const data = await response.json();
-
-      if (data.items && Array.isArray(data.items) && data.items.length > 0) {
-        // Ograniczamy widok do 4 najnowszych artykułów
-        const listItems = data.items.slice(0, 4).map((post: any) => `
-          <li style="margin-top: 1rem; line-height: 1.4;">
-            <a href="${post.link}" target="_blank" style="display: block; font-weight: 600; color: inherit; text-decoration: none;">
-              ${post.title}
-            </a>
-            <span style="font-size: 0.85em; color: var(--wa-color-neutral-600);">
-              Źródło: Google News | Data: ${new Date(post.pubDate).toLocaleDateString('pl-PL')}
-            </span>
-          </li>
-        `).join('');
-        
-        container.innerHTML = `<ul style="list-style-type: none; padding: 0; margin: 0;">${listItems}</ul>`;
-      } else {
-        container.innerHTML = `<p style="margin-top: 1rem;">Brak wiadomości dla tematyki: <strong>${topic}</strong>.</p>`;
-      }
-    } catch (error) {
-      console.error('Failed to fetch news:', error);
-      container.innerHTML = '<p style="color: var(--wa-color-danger-500); margin-top: 1rem;">Nie udało się pobrać wiadomości. Sprawdź połączenie.</p>';
+  private formatDate(value: string | undefined): string | null {
+    if (!value) {
+      return null;
     }
+
+    const date = new Date(value);
+
+    if (Number.isNaN(date.getTime())) {
+      return null;
+    }
+
+    return date.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  }
+
+  private escapeHtml(value: string): string {
+    const element = document.createElement('div');
+    element.textContent = value;
+    return element.innerHTML;
+  }
+
+  private escapeAttribute(value: string): string {
+    return this.escapeHtml(value).replace(/"/g, '&quot;');
   }
 }
