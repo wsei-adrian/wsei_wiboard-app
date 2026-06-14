@@ -4,6 +4,7 @@ import { LocalQuoteProvider } from '../quote/local-quote-provider';
 import { QuoteWidget } from '../quote/quote-widget';
 import { NewsWidget } from '../news/news-widget';
 import { WidgetRegistry } from './widget-registry';
+import { WeatherWidget } from '../weather/weather-widget'; 
 
 export function createDefaultWidgetRegistry(): WidgetRegistry {
   return new WidgetRegistry([
@@ -25,6 +26,12 @@ export function createDefaultWidgetRegistry(): WidgetRegistry {
       title: 'News Widget',
       createWidget: () => new NewsWidget(),
       createDefaultConfig: () => ({ topic: 'technology' }),
+    },
+    {
+      type: 'weather',
+      title: 'Weather Widget',
+      createWidget: () => new WeatherWidget(),
+      createDefaultConfig: () => ({ location: 'Kraków' }), 
     }
   ]);
 }
